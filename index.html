@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>校园二手交易平台</title>
+  <style>
+    :root {
+      --primary: #4a90d9;
+      --primary-hover: #357abd;
+      --success: #52c41a;
+      --warning: #faad14;
+      --danger: #ff4d4f;
+      --text: #333;
+      --text-secondary: #666;
+      --text-light: #999;
+      --border: #e8e8e8;
+      --bg: #f5f5f5;
+      --white: #ffffff;
+      --shadow: 0 2px 8px rgba(0,0,0,0.1);
+      --radius: 8px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+
+    .header {
+      background: var(--white);
+      box-shadow: var(--shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .nav { display: flex; align-items: center; gap: 16px; }
+
+    .nav button {
+      color: var(--text);
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      background: none;
+      border: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav button:hover {
+      background: var(--bg);
+      color: var(--primary);
+    }
+
+    .search-bar {
+      background: var(--white);
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-bar .container {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .search-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      outline: none;
+    }
+
+    .search-input:focus { border-color: var(--primary); }
+
+    .category-select {
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+      background: var(--white);
+      cursor: pointer;
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .product-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+
+    .product-card .image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 48px;
+    }
+
+    .product-card .info { padding: 16px; }
+
+    .product-card .title {
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .product-card .price {
+      color: var(--danger);
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .product-card .original-price {
+      color: var(--text-light);
+      text-decoration: line-through;
+      font-size: 12px;
+      margin-left: 8px;
+    }
+
+    .product-card .meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-light);
+    }
+
+    .product-card .campus {
+      background: var(--bg);
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .status-available {
+      background: #e6f7e6;
+      color: var(--success);
+    }
+
+    .status-sold {
+      background: #fff1f0;
+      color: var(--danger);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: var(--white);
+      padding: 32px;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 400px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-content h2 { margin-bottom: 20px; text-align: center; }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+      border-color: var(--primary);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .form-actions .btn { flex: 1; }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+      text-align: center;
+    }
+
+    .btn-primary { background: var(--primary); color: var(--white); }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    .btn-success { background: var(--success); color: var(--white); }
+    .btn-danger { background: var(--danger); color: var(--white); }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .detail-header {
+      background: var(--white);
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-header .container {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .detail-header .back-btn {
+      cursor: pointer;
+      padding: 8px 16px;
+      background: var(--bg);
+      border-radius: var(--radius);
+      border: none;
+    }
+
+    .detail-content { padding: 20px 0; }
+
+    .detail-main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+    }
+
+    .detail-image {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--white);
+      font-size: 80px;
+    }
+
+    .detail-info h1 { font-size: 24px; margin-bottom: 16px; }
+
+    .detail-info .price {
+      font-size: 32px;
+      color: var(--danger);
+      font-weight: bold;
+      margin-bottom: 16px;
+    }
+
+    .detail-info .original-price {
+      color: var(--text-light);
+      text-decoration: line-through;
+      font-size: 16px;
+      margin-left: 12px;
+    }
+
+    .detail-info .description {
+      color: var(--text-secondary);
+      line-height: 1.8;
+      margin: 20px 0;
+    }
+
+    .detail-info .seller-info {
+      background: var(--bg);
+      padding: 16px;
+      border-radius: var(--radius);
+      margin-top: 20px;
+    }
+
+    .detail-info .seller-info p { margin-bottom: 8px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-light);
+    }
+
+    .empty-state .icon { font-size: 64px; margin-bottom: 16px; }
+
+    .orders-list {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      margin-top: 20px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .order-item:last-child { border-bottom: none; }
+
+    .order-info h4 { margin-bottom: 6px; }
+
+    .order-info p { font-size: 14px; color: var(--text-light); }
+
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .publish-form {
+      background: var(--white);
+      padding: 32px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      max-width: 600px;
+      margin: 20px auto;
+    }
+
+    .publish-form h2 { margin-bottom: 24px; text-align: center; }
+
+    .user-center {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      gap: 20px;
+      padding: 20px 0;
+    }
+
+    .sidebar {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .sidebar .user-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: var(--white);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin: 0 auto 16px;
+    }
+
+    .sidebar .user-name { text-align: center; font-weight: 500; margin-bottom: 8px; }
+    .sidebar .user-campus { text-align: center; font-size: 14px; color: var(--text-light); margin-bottom: 20px; }
+
+    .sidebar .menu-item {
+      display: block;
+      width: 100%;
+      padding: 12px 16px;
+      text-align: left;
+      border: none;
+      background: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-bottom: 4px;
+    }
+
+    .sidebar .menu-item:hover, .sidebar .menu-item.active {
+      background: var(--bg);
+      color: var(--primary);
+    }
+
+    .content-area {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--white);
+      padding: 16px 24px;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+      z-index: 2000;
+      display: none;
+    }
+
+    .toast.active { display: block; }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--danger); }
+
+    @media (max-width: 768px) {
+      .products-grid { grid-template-columns: 1fr; }
+      .detail-main { grid-template-columns: 1fr; }
+      .user-center { grid-template-columns: 1fr; }
+      .header .container { flex-wrap: wrap; height: auto; padding: 12px 20px; gap: 10px; }
+      .search-bar .container { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <a class="logo" onclick="App.navigate('home')">校园二手市场</a>
+      <nav class="nav" id="auth-nav"></nav>
+    </div>
+  </header>
+
+  <div class="page active" id="page-home">
+    <div class="search-bar">
+      <div class="container">
+        <input type="text" class="search-input" placeholder="搜索商品..." onkeypress="if(event.key==='Enter') App.loadProducts()">
+        <select class="category-select" onchange="App.loadProducts()">
+          <option value="">所有分类</option>
+          <option value="手机数码">手机数码</option>
+          <option value="图书教材">图书教材</option>
+          <option value="交通工具">交通工具</option>
+          <option value="生活用品">生活用品</option>
+          <option value="运动器材">运动器材</option>
+        </select>
+      </div>
+    </div>
+    <div class="container">
+      <div class="products-grid"></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-detail">
+    <div class="detail-header">
+      <div class="container">
+        <button class="back-btn" onclick="App.navigate('home'); App.loadProducts()">返回</button>
+        <h3>商品详情</h3>
+      </div>
+    </div>
+    <div class="detail-content">
+      <div class="container">
+        <div class="detail-main">
+          <div class="detail-image" id="detail-image"></div>
+          <div class="detail-info">
+            <h1 id="detail-title"></h1>
+            <div class="price" id="detail-price"></div>
+            <p id="detail-desc"></p>
+            <p>分类：<span id="detail-category"></span></p>
+            <div class="seller-info">
+              <h4>卖家信息</h4>
+              <p>卖家：<span id="detail-seller"></span></p>
+              <p>电话：<span id="detail-phone"></span></p>
+              <p>学校：<span id="detail-campus"></span></p>
+            </div>
+            <div style="margin-top: 20px;">
+              <button class="btn btn-primary" id="buy-btn" style="width: 100%;" onclick="App.handleBuy()">立即购买</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-publish">
+    <div class="container">
+      <div class="publish-form">
+        <h2>发布商品</h2>
+        <form id="publish-form" onsubmit="return App.handlePublish(event)">
+          <div class="form-group">
+            <label>商品标题 *</label>
+            <input type="text" id="pub-title" required>
+          </div>
+          <div class="form-group">
+            <label>商品描述</label>
+            <textarea id="pub-desc"></textarea>
+          </div>
+          <div class="form-group">
+            <label>售价 *</label>
+            <input type="number" id="pub-price" step="0.01" required>
+          </div>
+          <div class="form-group">
+            <label>原价</label>
+            <input type="number" id="pub-original-price" step="0.01">
+          </div>
+          <div class="form-group">
+            <label>分类</label>
+            <select id="pub-category">
+              <option value="手机数码">手机数码</option>
+              <option value="图书教材">图书教材</option>
+              <option value="交通工具">交通工具</option>
+              <option value="生活用品">生活用品</option>
+              <option value="运动器材">运动器材</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn-outline" onclick="App.navigate('home')">取消</button>
+            <button type="submit" class="btn btn-primary">发布</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-user">
+    <div class="container">
+      <div class="user-center">
+        <div class="sidebar">
+          <div class="user-avatar" id="user-avatar"></div>
+          <div class="user-name" id="user-nickname"></div>
+          <div class="user-campus" id="user-campus"></div>
+          <hr style="margin: 16px 0; border: none; border-top: 1px solid var(--border)">
+          <button class="menu-item active" onclick="App.showUserTab('info')">个人信息</button>
+          <button class="menu-item" onclick="App.showUserTab('my-products')">我的商品</button>
+          <button class="menu-item" onclick="App.showUserTab('orders')">我的订单</button>
+        </div>
+        <div class="content-area" id="user-content"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="login-modal">
+    <div class="modal-content">
+      <h2>登录</h2>
+      <form id="login-form" onsubmit="return App.handleLogin(event)">
+        <div class="form-group">
+          <label>用户名</label>
+          <input type="text" id="login-username" required>
+        </div>
+        <div class="form-group">
+          <label>密码</label>
+          <input type="password" id="login-password" required>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('login-modal').classList.remove('active')">取消</button>
+          <button type="submit" class="btn btn-primary">登录</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="register-modal">
+    <div class="modal-content">
+      <h2>注册</h2>
+      <form id="register-form" onsubmit="return App.handleRegister(event)">
+        <div class="form-group">
+          <label>用户名 *</label>
+          <input type="text" id="reg-username" required>
+        </div>
+        <div class="form-group">
+          <label>密码 *</label>
+          <input type="password" id="reg-password" required>
+        </div>
+        <div class="form-group">
+          <label>昵称</label>
+          <input type="text" id="reg-nickname">
+        </div>
+        <div class="form-group">
+          <label>手机号</label>
+          <input type="text" id="reg-phone">
+        </div>
+        <div class="form-group">
+          <label>学校</label>
+          <input type="text" id="reg-campus">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" onclick="document.getElementById('register-modal').classList.remove('active')">取消</button>
+          <button type="submit" class="btn btn-primary">注册</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const DB = {
+      init() {
+        if (!localStorage.getItem('db_initialized')) {
+          const hashedPwd = this.hashPassword('123456');
+          
+          const users = [
+            { id: 1, username: 'admin', password: hashedPwd, nickname: '管理员', phone: '13800138000', campus: '清华大学' },
+            { id: 2, username: 'zhangsan', password: hashedPwd, nickname: '张三', phone: '13800138001', campus: '北京大学' },
+            { id: 3, username: 'lisi', password: hashedPwd, nickname: '李四', phone: '13800138002', campus: '中国人民大学' },
+            { id: 4, username: 'wangwu', password: hashedPwd, nickname: '王五', phone: '13800138003', campus: '北京航空航天大学' }
+          ];
+
+          const products = [
+            { id: 1, seller_id: 1, title: 'iPhone 13 Pro', description: '使用一年，功能正常，轻微划痕，128GB', price: 3500, original_price: 7999, category: '手机数码', status: 'available' },
+            { id: 2, seller_id: 1, title: '高等数学教材', description: '第七版，九成新，含笔记', price: 25, original_price: 58, category: '图书教材', status: 'available' },
+            { id: 3, seller_id: 2, title: '山地自行车', description: '捷安特ATX860，骑行半年，性能良好', price: 800, original_price: 2599, category: '交通工具', status: 'available' },
+            { id: 4, seller_id: 2, title: '台灯', description: '小米台灯，几乎全新，护眼模式', price: 60, original_price: 149, category: '生活用品', status: 'available' },
+            { id: 5, seller_id: 3, title: '机械键盘', description: 'Cherry青轴，使用三个月，手感极佳', price: 350, original_price: 699, category: '手机数码', status: 'available' },
+            { id: 6, seller_id: 3, title: '考研数学复习全书', description: '李永乐版，全新未使用', price: 40, original_price: 75, category: '图书教材', status: 'available' },
+            { id: 7, seller_id: 4, title: '折叠电动车', description: '续航20公里，使用半年，附充电器', price: 1200, original_price: 2999, category: '交通工具', status: 'available' },
+            { id: 8, seller_id: 4, title: '宿舍小冰箱', description: '海尔迷你冰箱，9成新，制冷效果好', price: 300, original_price: 799, category: '生活用品', status: 'available' },
+            { id: 9, seller_id: 1, title: 'iPad Air 4', description: '64GB WiFi版，带Apple Pencil，使用半年', price: 2800, original_price: 4799, category: '手机数码', status: 'available' },
+            { id: 10, seller_id: 2, title: '大学英语四级真题', description: '含2023年最新真题，全新', price: 15, original_price: 35, category: '图书教材', status: 'available' },
+            { id: 11, seller_id: 3, title: '篮球', description: '斯伯丁室外篮球，使用一个月', price: 80, original_price: 159, category: '运动器材', status: 'available' },
+            { id: 12, seller_id: 4, title: '书桌收纳架', description: '木质三层收纳架，全新未拆封', price: 50, original_price: 120, category: '生活用品', status: 'available' }
+          ];
+
+          localStorage.setItem('users', JSON.stringify(users));
+          localStorage.setItem('products', JSON.stringify(products));
+          localStorage.setItem('orders', JSON.stringify([]));
+          localStorage.setItem('db_initialized', '1');
+        }
+      },
+
+      hashPassword(pwd) {
+        let hash = 0;
+        const str = 'salt2024' + pwd;
+        for (let i = 0; i < str.length; i++) {
+          const char = str.charCodeAt(i);
+          hash = ((hash << 5) - hash) + char;
+          hash = hash & hash;
+        }
+        return 'hash_' + Math.abs(hash).toString(36);
+      },
+
+      verifyPassword(pwd, hash) {
+        return this.hashPassword(pwd) === hash;
+      },
+
+      getUsers() { return JSON.parse(localStorage.getItem('users') || '[]'); },
+      getProducts() { return JSON.parse(localStorage.getItem('products') || '[]'); },
+      getOrders() { return JSON.parse(localStorage.getItem('orders') || '[]'); },
+
+      saveUsers(users) { localStorage.setItem('users', JSON.stringify(users)); },
+      saveProducts(products) { localStorage.setItem('products', JSON.stringify(products)); },
+      saveOrders(orders) { localStorage.setItem('orders', JSON.stringify(orders)); },
+
+      getNextId(collection) {
+        const items = this[collection]();
+        return items.length > 0 ? Math.max(...items.map(i => i.id)) + 1 : 1;
+      }
+    };
+
+    const App = {
+      currentUser: null,
+      currentProduct: null,
+
+      init() {
+        DB.init();
+        this.loadUser();
+        this.updateNav();
+        this.navigate('home');
+        this.loadProducts();
+      },
+
+      loadUser() {
+        const userStr = localStorage.getItem('current_user');
+        if (userStr) {
+          this.currentUser = JSON.parse(userStr);
+        }
+      },
+
+      updateNav() {
+        const nav = document.getElementById('auth-nav');
+        if (this.currentUser) {
+          nav.innerHTML = `
+            <button onclick="App.navigate('publish')">发布商品</button>
+            <button onclick="App.navigate('user'); App.showUserTab('orders')">我的订单</button>
+            <button onclick="App.navigate('user')">${this.currentUser.nickname}</button>
+            <button onclick="App.logout()">退出</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <button onclick="App.showModal('login-modal')">登录</button>
+            <button onclick="App.showModal('register-modal')">注册</button>
+          `;
+        }
+      },
+
+      navigate(page) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-' + page).classList.add('active');
+      },
+
+      showModal(id) {
+        document.getElementById(id).classList.add('active');
+      },
+
+      loadProducts() {
+        const keyword = document.querySelector('.search-input').value.toLowerCase();
+        const category = document.querySelector('.category-select').value;
+
+        let products = DB.getProducts();
+
+        if (keyword) {
+          products = products.filter(p =>
+            p.title.toLowerCase().includes(keyword) ||
+            (p.description && p.description.toLowerCase().includes(keyword))
+          );
+        }
+
+        if (category) {
+          products = products.filter(p => p.category === category);
+        }
+
+        products.sort((a, b) => b.id - a.id);
+
+        const users = DB.getUsers();
+        const userMap = {};
+        users.forEach(u => userMap[u.id] = u);
+
+        const icons = { '手机数码': '📱', '图书教材': '📚', '交通工具': '🚲', '生活用品': '💡', '运动器材': '🏀', '其他': '📦' };
+
+        const container = document.querySelector('.products-grid');
+        if (products.length === 0) {
+          container.innerHTML = `
+            <div class="empty-state" style="grid-column: 1/-1;">
+              <div class="icon">📦</div>
+              <p>暂无商品</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = products.map(p => {
+          const seller = userMap[p.seller_id] || {};
+          return `
+            <div class="product-card" onclick="App.showDetail(${p.id})">
+              <div class="image">${icons[p.category] || '📦'}</div>
+              <div class="info">
+                <div class="title">${p.title}</div>
+                <div>
+                  <span class="price">¥${p.price}</span>
+                  ${p.original_price ? `<span class="original-price">¥${p.original_price}</span>` : ''}
+                </div>
+                <div class="meta">
+                  <span>👤 ${seller.nickname || '未知'}</span>
+                  <span class="campus">🏫 ${seller.campus || ''}</span>
+                </div>
+                <div style="margin-top:8px;">
+                  <span class="status-badge ${p.status === 'available' ? 'status-available' : 'status-sold'}">
+                    ${p.status === 'available' ? '在售' : '已售'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      },
+
+      showDetail(productId) {
+        const products = DB.getProducts();
+        const users = DB.getUsers();
+        
+        this.currentProduct = products.find(p => p.id === productId);
+        if (!this.currentProduct) return;
+
+        const p = this.currentProduct;
+        const seller = users.find(u => u.id === p.seller_id) || {};
+
+        document.getElementById('detail-title').textContent = p.title;
+        document.getElementById('detail-price').innerHTML = `¥${p.price}${p.original_price ? `<span class="original-price">¥${p.original_price}</span>` : ''}`;
+        document.getElementById('detail-desc').textContent = p.description || '暂无描述';
+        document.getElementById('detail-category').textContent = p.category || '未分类';
+        document.getElementById('detail-seller').textContent = seller.nickname || '未知';
+        document.getElementById('detail-phone').textContent = seller.phone || '未填写';
+        document.getElementById('detail-campus').textContent = seller.campus || '未填写';
+
+        const icons = { '手机数码': '📱', '图书教材': '📚', '交通工具': '🚲', '生活用品': '💡', '运动器材': '🏀', '其他': '📦' };
+        document.getElementById('detail-image').textContent = icons[p.category] || '📦';
+
+        const buyBtn = document.getElementById('buy-btn');
+        if (p.status !== 'available' || !this.currentUser || p.seller_id === this.currentUser.id) {
+          buyBtn.style.display = 'none';
+        } else {
+          buyBtn.style.display = 'block';
+        }
+
+        this.navigate('detail');
+      },
+
+      handleLogin(e) {
+        e.preventDefault();
+        const username = document.getElementById('login-username').value;
+        const password = document.getElementById('login-password').value;
+
+        const users = DB.getUsers();
+        const user = users.find(u => u.username === username && DB.verifyPassword(password, u.password));
+
+        if (!user) {
+          this.showToast('用户名或密码错误', 'error');
+          return false;
+        }
+
+        this.currentUser = { id: user.id, username: user.username, nickname: user.nickname, phone: user.phone, campus: user.campus };
+        localStorage.setItem('current_user', JSON.stringify(this.currentUser));
+        this.updateNav();
+        document.getElementById('login-modal').classList.remove('active');
+        this.showToast('登录成功', 'success');
+        return false;
+      },
+
+      handleRegister(e) {
+        e.preventDefault();
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        const nickname = document.getElementById('reg-nickname').value || username;
+        const phone = document.getElementById('reg-phone').value;
+        const campus = document.getElementById('reg-campus').value;
+
+        const users = DB.getUsers();
+        if (users.find(u => u.username === username)) {
+          this.showToast('用户名已存在', 'error');
+          return false;
+        }
+
+        const newUser = {
+          id: DB.getNextId('getUsers'),
+          username,
+          password: DB.hashPassword(password),
+          nickname,
+          phone,
+          campus
+        };
+
+        users.push(newUser);
+        DB.saveUsers(users);
+
+        this.currentUser = { id: newUser.id, username: newUser.username, nickname: newUser.nickname, phone: newUser.phone, campus: newUser.campus };
+        localStorage.setItem('current_user', JSON.stringify(this.currentUser));
+        this.updateNav();
+        document.getElementById('register-modal').classList.remove('active');
+        this.showToast('注册成功', 'success');
+        return false;
+      },
+
+      logout() {
+        this.currentUser = null;
+        localStorage.removeItem('current_user');
+        this.updateNav();
+        this.navigate('home');
+        this.showToast('已退出登录', 'success');
+      },
+
+      handlePublish(e) {
+        e.preventDefault();
+        if (!this.currentUser) {
+          this.showToast('请先登录', 'error');
+          return false;
+        }
+
+        const title = document.getElementById('pub-title').value;
+        const description = document.getElementById('pub-desc').value;
+        const price = parseFloat(document.getElementById('pub-price').value);
+        const original_price = document.getElementById('pub-original-price').value ? parseFloat(document.getElementById('pub-original-price').value) : null;
+        const category = document.getElementById('pub-category').value;
+
+        const products = DB.getProducts();
+        products.push({
+          id: DB.getNextId('getProducts'),
+          seller_id: this.currentUser.id,
+          title,
+          description,
+          price,
+          original_price,
+          category,
+          status: 'available'
+        });
+
+        DB.saveProducts(products);
+        document.getElementById('publish-form').reset();
+        this.showToast('发布成功', 'success');
+        this.navigate('home');
+        this.loadProducts();
+        return false;
+      },
+
+      handleBuy() {
+        if (!this.currentUser) {
+          this.showToast('请先登录', 'error');
+          return;
+        }
+
+        if (!this.currentProduct || this.currentProduct.seller_id === this.currentUser.id) {
+          this.showToast('不能购买自己的商品', 'error');
+          return;
+        }
+
+        if (this.currentProduct.status !== 'available') {
+          this.showToast('商品已售出', 'error');
+          return;
+        }
+
+        if (!confirm('确认购买此商品？')) return;
+
+        const products = DB.getProducts();
+        const product = products.find(p => p.id === this.currentProduct.id);
+        product.status = 'sold';
+        DB.saveProducts(products);
+
+        const orders = DB.getOrders();
+        orders.push({
+          id: DB.getNextId('getOrders'),
+          product_id: product.id,
+          buyer_id: this.currentUser.id,
+          seller_id: product.seller_id,
+          status: 'pending',
+          created_at: new Date().toLocaleString()
+        });
+        DB.saveOrders(orders);
+
+        this.showToast('购买成功，请联系卖家', 'success');
+        this.showDetail(product.id);
+      },
+
+      showUserTab(tab) {
+        const content = document.getElementById('user-content');
+
+        document.querySelectorAll('.sidebar .menu-item').forEach((item, index) => {
+          item.classList.remove('active');
+          if ((tab === 'info' && index === 0) || (tab === 'my-products' && index === 1) || (tab === 'orders' && index === 2)) {
+            item.classList.add('active');
+          }
+        });
+
+        if (!this.currentUser) return;
+
+        if (tab === 'info') {
+          const products = DB.getProducts().filter(p => p.seller_id === this.currentUser.id);
+          const available = products.filter(p => p.status === 'available').length;
+          const sold = products.filter(p => p.status === 'sold').length;
+
+          content.innerHTML = `
+            <h3>个人信息</h3>
+            <p><strong>用户名：</strong>${this.currentUser.username}</p>
+            <p><strong>昵称：</strong>${this.currentUser.nickname}</p>
+            <p><strong>手机：</strong>${this.currentUser.phone || '未设置'}</p>
+            <p><strong>学校：</strong>${this.currentUser.campus || '未设置'}</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border)">
+            <h4>商品统计</h4>
+            <p>总发布：<strong>${products.length}</strong> 件</p>
+            <p>在售：<strong style="color: var(--success)">${available}</strong> 件</p>
+            <p>已售：<strong style="color: var(--danger)">${sold}</strong> 件</p>
+          `;
+        } else if (tab === 'my-products') {
+          const products = DB.getProducts().filter(p => p.seller_id === this.currentUser.id).sort((a, b) => b.id - a.id);
+
+          if (products.length === 0) {
+            content.innerHTML = '<h3>我的商品</h3><div class="empty-state"><p>暂无商品</p></div>';
+            return;
+          }
+
+          content.innerHTML = `
+            <h3>我的商品</h3>
+            <div class="orders-list">
+              ${products.map(p => `
+                <div class="order-item">
+                  <div class="order-info">
+                    <h4>${p.title}</h4>
+                    <p>¥${p.price} - ${p.category}</p>
+                  </div>
+                  <span class="status-badge ${p.status === 'available' ? 'status-available' : 'status-sold'}">
+                    ${p.status === 'available' ? '在售' : '已售'}
+                  </span>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        } else if (tab === 'orders') {
+          const orders = DB.getOrders().filter(o => o.buyer_id === this.currentUser.id || o.seller_id === this.currentUser.id).sort((a, b) => b.id - a.id);
+          const products = DB.getProducts();
+          const productMap = {};
+          products.forEach(p => productMap[p.id] = p);
+
+          if (orders.length === 0) {
+            content.innerHTML = '<h3>我的订单</h3><div class="empty-state"><p>暂无订单</p></div>';
+            return;
+          }
+
+          content.innerHTML = `
+            <h3>我的订单</h3>
+            <div class="orders-list">
+              ${orders.map(o => {
+                const product = productMap[o.product_id] || {};
+                const isBuyer = o.buyer_id === this.currentUser.id;
+                return `
+                  <div class="order-item">
+                    <div class="order-info">
+                      <h4>${product.title || '未知商品'}</h4>
+                      <p>¥${product.price || 0} - ${o.created_at} - ${isBuyer ? '我购买的' : '我出售的'}</p>
+                    </div>
+                    <span class="status-badge ${o.status === 'pending' ? 'status-available' : 'status-sold'}">
+                      ${o.status === 'pending' ? '待完成' : '已完成'}
+                    </span>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `;
+        }
+
+        document.getElementById('user-nickname').textContent = this.currentUser.nickname;
+        document.getElementById('user-campus').textContent = '🏫 ' + (this.currentUser.campus || '未设置');
+        document.getElementById('user-avatar').textContent = this.currentUser.nickname.charAt(0);
+      },
+
+      showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast active ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.remove('active');
+          setTimeout(() => toast.remove(), 300);
+        }, 2000);
+      }
+    };
+
+    document.addEventListener('DOMContentLoaded', () => App.init());
+
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
